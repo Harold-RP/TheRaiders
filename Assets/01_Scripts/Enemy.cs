@@ -8,7 +8,7 @@ public class Enemy : MonoBehaviour
 {
     [Header("Referencias")]
     public EnemyType type = EnemyType.Melee;
-    public GameObject shootPrefab;
+    //public GameObject shootPrefab;
     //public GameObject destructionEffect;
     public Transform firePoint;
     public Transform target;
@@ -24,10 +24,13 @@ public class Enemy : MonoBehaviour
     public float life = 3f;
     public float maxLife = 3f;
     public float damage = 1f;
-    public float attackRange = 4f;
+    public float attackRange = 10f;
 
     //[Header("UI")]
     //public Image lifeBar;
+
+    [Header("Animator")]
+    public Animator anim;
 
     //[Header("Sounds")]
     //public AudioClip explosionSound;
@@ -61,12 +64,11 @@ public class Enemy : MonoBehaviour
             if (type == EnemyType.Melee)
             {
                 //trigger melee attack  ->  Collision
-                Debug.Log("Melee Attack");
+                anim.SetTrigger("MeleeAttack");
             }
             else if (type == EnemyType.Ranged)
             {
                 //Instantiate(shootPrefab, firePoint.position, firePoint.rotation);
-                Debug.Log("Ranged Attack");
             }
         }
         else
@@ -84,10 +86,10 @@ public class Enemy : MonoBehaviour
     void Movement()
     {
         if (transform.position.x < target.position.x)
-            transform.rotation = Quaternion.Euler(0, 180, 0);
-        else
             transform.rotation = Quaternion.Euler(0, 0, 0);
-        transform.Translate(-(speed * Time.deltaTime), 0, 0);
+        else
+            transform.rotation = Quaternion.Euler(0, 180, 0);
+        transform.Translate(speed * Time.deltaTime, 0, 0);
     }
 
     void CheckRange()
