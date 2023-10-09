@@ -85,4 +85,17 @@ public class Spawner : MonoBehaviour
             AudioManager.instance.SetMusic(bossTheme);
         }
     }
+
+    public void NewHorde()
+    {
+        if (!spawnNewHorde)//cambiar
+        {
+            for (int i = 0; i < enemiesPerHorde; i++)
+            {
+                int enemy = Random.Range(0, enemyPrefabs.Count);
+                float y = Random.Range(topPoint.position.y, bottomPoint.position.y);
+                Instantiate(enemyPrefabs[enemy], new Vector3(transform.position.x, y, 0), Quaternion.Euler(0, 180, 0));
+            }
+        }
+    }
 }
