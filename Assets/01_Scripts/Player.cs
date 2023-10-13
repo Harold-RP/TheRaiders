@@ -4,45 +4,125 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    public float Speed = 7f;
-
-    public float Horizontal;
-    public float Vertical;
+    new Renderer renderer;
     Animator animator;
-    bool facing;
+    Rigidbody2D rb;
+    //[Header("Referencias")]
+    [Header("Estadisticas")]
+    public float Speed = 7f;
+    public bool canJump = true;
+    public float jumpForce = 7f;
+    public bool[] backpack = new bool[4];
+    public List<GameObject> powerUpPrefabs;
+
     private void Awake()
     {
         animator = GetComponent<Animator>();
+        renderer = GetComponent<Renderer>();
+        rb = GetComponent<Rigidbody2D>();
+        rb.Sleep();
     }
+
     // Start is called before the first frame update
     void Start()
     {
-        
     }
 
     // Update is called once per frame
     void Update()
     {
-        Horizontal = Input.GetAxis("Horizontal");
-        Vertical = Input.GetAxis("Vertical");
-        animator.SetFloat("Speed",Mathf.Abs(Horizontal!=0? Horizontal: Vertical));
+        Movement();
+        layers();
+        Mirror();
+        UsePowerUp();
     }
-    void FixedUpdate()
+        
+    void Movement()
     {
-        Vector3 movement = new Vector3(Horizontal*Speed, Vertical*Speed, 0.0f);
-        transform.position = transform.position + movement*Time.deltaTime;
-        Flip(Horizontal);
+        float x = Input.GetAxis("Horizontal");
+        float y = Input.GetAxis("Vertical");
+        animator.SetFloat("Speed",Mathf.Abs(x != 0? x: y));
+        rb.velocity = new Vector2(x * Speed, y * Speed);
     }
-    private void Flip(float Horizontal)
-    {
-        if (Horizontal<0 && !facing || Horizontal >0 && facing)
-        {
-            facing = !facing;
-            Vector3 scale = transform.localScale;
-            scale.x *= -1;
-            transform.localScale=scale;
 
+    void Mirror()
+    {
+        if (rb.velocity.x < 0)
+            transform.rotation = Quaternion.Euler(0, 180, 0);
+        else if (rb.velocity.x > 0)
+            transform.rotation = Quaternion.Euler(0, 0, 0);
+    }
+
+    void layers()
+    {
+        if (transform.position.y <= -3)
+            renderer.sortingOrder = 2;
+        else if(transform.position.y >= 0)
+            renderer.sortingOrder = 0;
+        else
+            renderer.sortingOrder = 1;
+    }
+
+    public void CollectPowerUp(PowerUpType powerUpType)
+    {
+        switch (powerUpType)
+        {
+            case PowerUpType.Gun:
+                Debug.Log("Collected gun");
+                if (!backpack[0])
+                    backpack[0] = true;
+                break;
+            case PowerUpType.Scissors:
+                Debug.Log("Collected scissors");
+                if (!backpack[1])
+                    backpack[1] = true;
+                break;
+            case PowerUpType.Light:
+                Debug.Log("Collected light");
+                if (!backpack[2])
+                    backpack[2] = true;
+                break;
+            case PowerUpType.Magnet:
+                Debug.Log("Collected magnet");
+                if (!backpack[3])
+                    backpack[3] = true;
+                break;
         }
     }
 
+    void UsePowerUp()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            if (backpack[0])
+            {
+                Debug.Log("Used Gun");
+                Instantiate(powerUpPrefabs[0], transform.position, Quaternion.Euler(0, 0, 0));
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            if (backpack[1])
+            {
+                Debug.Log("Used Scissors");
+                Instantiate(powerUpPrefabs[1], transform.position, Quaternion.Euler(0, 0, 0));
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            if (backpack[2])
+            {
+                Debug.Log("Used Light");
+                Instantiate(powerUpPrefabs[2], transform.position, Quaternion.Euler(0, 0, 0));
+            }
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            if (backpack[3])
+            {
+                Debug.Log("Used Magnet");
+                Instantiate(powerUpPrefabs[3], transform.position, Quaternion.Euler(0, 0, 0));
+            }
+        }
+    }
 }
