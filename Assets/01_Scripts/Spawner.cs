@@ -6,7 +6,7 @@ using UnityEngine;
 public class Spawner : MonoBehaviour
 {
     public float timer = 0f;
-    public float timeBtwSpawn = 10f;
+    public float timeBtwSpawn = 5f;
 
     [Header("Referencias")]
     public List<GameObject> enemyPrefabs;
@@ -59,12 +59,9 @@ public class Spawner : MonoBehaviour
 
                     if (!spawnNewHorde)//cambiar
                     {
-                        for (int i = 0; i < enemiesPerHorde; i++)
-                        {
-                            int enemy = Random.Range(0, enemyPrefabs.Count);
-                            float y = Random.Range(topPoint.position.y, bottomPoint.position.y);
-                            Instantiate(enemyPrefabs[enemy], new Vector3(transform.position.x, y, 0), Quaternion.Euler(0, 180, 0));
-                        }
+                        int enemy = Random.Range(0, enemyPrefabs.Count);
+                        Instantiate(enemyPrefabs[enemy], new Vector3(transform.position.x, topPoint.position.y, 0), Quaternion.Euler(0, 180, 0));
+                        Instantiate(enemyPrefabs[enemy], new Vector3(transform.position.x, bottomPoint.position.y, 0), Quaternion.Euler(0, 180, 0));
                     }
                 }
                 else
@@ -77,25 +74,22 @@ public class Spawner : MonoBehaviour
         }
     }
 
+    public void NewHorde()
+    {
+        if (!spawnNewHorde)//cambiar
+        {
+            int enemy = Random.Range(0, enemyPrefabs.Count);
+            Instantiate(enemyPrefabs[enemy], new Vector3(transform.position.x, topPoint.position.y, 0), Quaternion.Euler(0, 180, 0));
+            Instantiate(enemyPrefabs[enemy], new Vector3(transform.position.x, bottomPoint.position.y, 0), Quaternion.Euler(0, 180, 0));
+        }
+    }
+
     public void AddDefeatedHorde()
     {
         defeatedHordes++;
         if (!bossSpawned && defeatedHordes >= spawnBossAtNHorde)
         {
             AudioManager.instance.SetMusic(bossTheme);
-        }
-    }
-
-    public void NewHorde()
-    {
-        if (!spawnNewHorde)//cambiar
-        {
-            for (int i = 0; i < enemiesPerHorde; i++)
-            {
-                int enemy = Random.Range(0, enemyPrefabs.Count);
-                float y = Random.Range(topPoint.position.y, bottomPoint.position.y);
-                Instantiate(enemyPrefabs[enemy], new Vector3(transform.position.x, y, 0), Quaternion.Euler(0, 180, 0));
-            }
         }
     }
 }

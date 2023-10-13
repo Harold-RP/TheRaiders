@@ -6,12 +6,15 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
+    new Renderer renderer;
+    Renderer targetRenderer;
     [Header("Referencias")]
     public EnemyType type = EnemyType.Melee;
     //public GameObject shootPrefab;
     //public GameObject destructionEffect;
     public Transform firePoint;
     public Transform target;
+    public GameObject targetGo;
     public bool targetInRange = false;
     public List<GameObject> powerUpPrefabs;
 
@@ -20,17 +23,17 @@ public class Enemy : MonoBehaviour
     public float timeBtwAttacks = 3f;
     public float attackDuration = 3f;
     public float attackTimer = 0;
-    public float speed = 2f;
+    public float speed = 1f;
     public float life = 3f;
     public float maxLife = 3f;
     public float damage = 1f;
-    public float attackRange = 10f;
+    public float attackRange;
 
     //[Header("UI")]
     //public Image lifeBar;
 
-    [Header("Animator")]
-    public Animator anim;
+    //[Header("Animator")]
+    //public Animator anim;
 
     //[Header("Sounds")]
     //public AudioClip explosionSound;
@@ -39,15 +42,22 @@ public class Enemy : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        GameObject targetGo = GameObject.FindGameObjectWithTag("Player");
+        renderer = GetComponent<Renderer>();
+        targetGo = GameObject.FindGameObjectWithTag("Player");
+        targetRenderer = targetGo.GetComponent<Renderer>();
         if (targetGo != null)
             target = targetGo.transform;
         //lifeBar.fillAmount = life / maxLife;
+        if (type == EnemyType.Melee)
+            attackRange = 5f;
+        else
+            attackRange = 10f;
     }
 
     // Update is called once per frame
     void Update()
     {
+        layers();
         CheckRange();
         if (targetInRange)
             Attack();
@@ -61,10 +71,10 @@ public class Enemy : MonoBehaviour
         {
             attackTimer += Time.deltaTime;
 
-            if (type == EnemyType.Melee)
+            if (type == EnemyType.Melee && renderer.sortingOrder == targetRenderer.sortingOrder)
             {
                 //trigger melee attack  ->  Collision
-                anim.SetTrigger("MeleeAttack");
+                //anim.SetTrigger("MeleeAttack");
             }
             else if (type == EnemyType.Ranged)
             {
@@ -85,11 +95,20 @@ public class Enemy : MonoBehaviour
 
     void Movement()
     {
+        Mirror();
+        transform.Translate(speed * Time.deltaTime, 0, 0);
+        if(transform.position.y < target.position.y)
+            transform.Translate(0, speed * Time.deltaTime, 0);
+        else if(transform.position.y > target.position.y)
+            transform.Translate(0, -(speed * Time.deltaTime), 0);
+    }
+
+    void Mirror()
+    {
         if (transform.position.x < target.position.x)
             transform.rotation = Quaternion.Euler(0, 0, 0);
         else
             transform.rotation = Quaternion.Euler(0, 180, 0);
-        transform.Translate(speed * Time.deltaTime, 0, 0);
     }
 
     void CheckRange()
@@ -98,9 +117,15 @@ public class Enemy : MonoBehaviour
         {
             float distance = Vector2.Distance(transform.position, target.position);
             if (distance <= attackRange)
+            {
                 targetInRange = true;
+                //goingLeftRight = false;
+            }
             else
+            {
                 targetInRange = false;
+                //goingLeftRight = true;
+            }
         }
         else
             targetInRange = false;
@@ -113,15 +138,25 @@ public class Enemy : MonoBehaviour
         if (life <= 0)
         {
             //AudioManager.instance.PlaySFX(explosionSound);
-            //if (Random.Range(0, 2) == 1)
-            //{
-            //    int p = Random.Range(0, powerUpPrefabs.Count);
-            //    Instantiate(powerUpPrefabs[p], transform.position, Quaternion.Euler(0, 0, 180));
-            //}
+            if (Random.Range(0, 4) == 1)
+            {
+                int p = Random.Range(0, powerUpPrefabs.Count);
+                Instantiate(powerUpPrefabs[p], transform.position, Quaternion.Euler(0, 0, 0));
+            }
             //Spawner.instance.addKilledEnemies();
             //Instantiate(destructionEffect, transform.position, transform.rotation);
             Destroy(gameObject);
         }
+    }
+
+    void layers()
+    {
+        if (transform.position.y <= -3)
+            renderer.sortingOrder = 2;
+        else if (transform.position.y >= 0)
+            renderer.sortingOrder = 0;
+        else
+            renderer.sortingOrder = 1;
     }
 }
 
